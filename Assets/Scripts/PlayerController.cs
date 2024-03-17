@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 10;    // 점프 강도
     public float gravityModifier;   // 중력 강도
     public bool isOnGround = true;  // 플레이어 착지 상태
+    public bool gameOver;           // 게임종료 유무
 
     private Rigidbody playerRb;
 
@@ -39,6 +40,13 @@ public class PlayerController : MonoBehaviour
     // 플레이어가 오브젝트와 충돌시에 대한 이벤트 함수
     private void OnCollisionEnter(Collision collision)
     {
-        isOnGround = true;
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isOnGround = true;
+        } else if (collision.gameObject.CompareTag("Obstacle"))
+        {
+            Debug.Log("Game Over");
+            gameOver = true;
+        }
     }
 }
