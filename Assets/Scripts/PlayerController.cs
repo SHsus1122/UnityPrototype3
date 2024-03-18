@@ -8,9 +8,14 @@ public class PlayerController : MonoBehaviour
     public float gravityModifier;   // 중력 강도
     public bool isOnGround = true;  // 플레이어 착지 상태
     public bool gameOver;           // 게임종료 유무
+    public ParticleSystem explosionParticle;    // 사망시 폭발 연기 파티클
+    public ParticleSystem dirtParticle;         // 달리기 바닥 파편 파티클
+    public AudioClip jumpSound;
+    public AudioClip crashSound;
 
     private Rigidbody playerRb;
     private Animator PlayerAnim;
+    private AudioSource playAudio;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +24,7 @@ public class PlayerController : MonoBehaviour
         // 하지만 Rigidbody 는 별도로 추가하는 것이기에 자동으로 지원하지 않습니다.
         playerRb = GetComponent<Rigidbody>();
         PlayerAnim = GetComponent<Animator>();  // PlayerAnimation 가져오기
+        playAudio = GetComponent<AudioSource>();
         Physics.gravity *= gravityModifier;     // 중력 정보를 가져와서 원하는 곱하기로 원하는 중력 강도로 설정합니다.
     }
 
@@ -36,6 +42,8 @@ public class PlayerController : MonoBehaviour
             playerRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isOnGround = false;
             PlayerAnim.SetTrigger("Jump_trig");
+            dirtParticle.Stop();
+            playAudio.PlayOneShot(jumpSound, 1.0f);   // 한 번만 재생, 실수는 사운드 볼륨
         }
     }
 
@@ -45,12 +53,16 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isOnGround = true;
+            dirtParticle.Play();
         } else if (collision.gameObject.CompareTag("Obstacle"))
         {
             Debug.Log("Game Over");
             gameOver = true;
             PlayerAnim.SetBool("Death_b", true);
             PlayerAnim.SetInteger("DeathType_int", 1);
+            explosionParticle.Play();
+            dirtParticle.Stop();
+            playAudio.PlayOneShot(crashSound, 1.0f);   // 한 번만 재생, 실수는 사운드 볼륨
         }
     }
 }
